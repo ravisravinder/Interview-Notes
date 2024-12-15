@@ -248,3 +248,181 @@ int x = xObj;  // Unboxing
 ```java
 int num = Integer.parseInt("123");  // Converts string to integer
 String str = Integer.toString(123); // Converts integer to string
+
+
+# Java Concepts - README
+
+## Table of Contents
+1. [null in Java](#null-in-java)
+2. [Object Class Methods](#object-class-methods)
+3. [Final Keyword](#final-keyword)
+4. [Immutability and String](#immutability-and-string)
+5. [Enums in Java](#enums-in-java)
+6. [String Creation and String Constant Pool](#string-creation-and-string-constant-pool)
+7. [Fail-Fast vs. Fail-Safe](#fail-fast-vs-fail-safe)
+8. [Dependency Injection Types](#dependency-injection-types)
+9. [Dependency Injection vs Dependency Inversion Principle](#dependency-injection-vs-dependency-inversion-principle)
+
+---
+
+## null in Java
+- `null` is a literal in Java that represents the absence of a value or object.
+- It signifies that a reference variable does not point to any object or is uninitialized.
+
+### Key Points:
+- **Represents Absence of Object Reference:**
+  ```java
+  String str = null; // str doesn't refer to any object
+  ```
+
+---
+
+## Object Class Methods
+- The `Object` class is the root of the class hierarchy in Java. Every class implicitly extends it.
+
+### Key Methods:
+1. `equals(Object obj)` - Compares this object to another.
+2. `hashCode()` - Returns a hash code for the object.
+3. `toString()` - Returns a string representation of the object.
+4. `clone()` - Creates and returns a copy of the object.
+5. `finalize()` - Called before the object is garbage collected.
+
+---
+
+## Final Keyword
+- Used to declare constants, restrict inheritance, or prevent method overriding.
+
+### Key Uses:
+1. **Final Variables:** Values cannot be changed once assigned.
+2. **Final Methods:** Cannot be overridden by subclasses.
+3. **Final Classes:** Cannot be extended.
+
+---
+
+## Immutability and String
+
+### Why Strings are Immutable:
+- Strings are stored in the String Constant Pool to save memory and prevent duplication.
+- Immutability ensures thread safety and secure handling of sensitive data.
+
+---
+
+## Enums in Java
+- Enums are special classes used to define a collection of constants.
+
+### Key Benefits:
+- Readability and maintainability.
+- Type safety.
+- Built-in methods like `values()`, `ordinal()`, and `valueOf()`.
+
+---
+
+## String Creation and String Constant Pool
+- **Ways to Create Strings:**
+  ```java
+  // Using literals
+  String str1 = "Hello";
+
+  // Using the new keyword
+  String str2 = new String("Hello");
+  ```
+- **String Constant Pool:**
+  - A memory area in the heap where string literals are stored.
+  - Ensures that duplicate strings are not created.
+
+---
+
+## Fail-Fast vs. Fail-Safe
+
+### Fail-Fast:
+- Throws `ConcurrentModificationException` when a collection is modified during iteration.
+- Used in collections like `ArrayList`, `HashMap`, and `HashSet`.
+
+**Example:**
+```java
+List<String> list = new ArrayList<>();
+list.add("One");
+list.add("Two");
+
+Iterator<String> iterator = list.iterator();
+while (iterator.hasNext()) {
+    if (iterator.next().equals("One")) {
+        list.add("Three"); // Throws ConcurrentModificationException
+    }
+}
+```
+
+### Fail-Safe:
+- Allows safe modification of a collection during iteration by working on a copy.
+- Used in `CopyOnWriteArrayList` and `ConcurrentHashMap`.
+
+**Example:**
+```java
+List<String> list = new CopyOnWriteArrayList<>();
+list.add("One");
+list.add("Two");
+
+for (String value : list) {
+    if (value.equals("One")) {
+        list.add("Three");
+    }
+}
+```
+
+---
+
+## Dependency Injection Types
+- Dependency injection is a design pattern used to achieve inversion of control.
+
+### 1. Constructor Injection:
+- **Use Case:** Mandatory dependencies.
+- Promotes immutability and testability.
+
+**Example:**
+```java
+public class UserService {
+    private final UserRepository userRepository;
+
+    @Autowired
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+}
+```
+
+### 2. Field Injection:
+- **Use Case:** Optional dependencies.
+
+**Example:**
+```java
+public class UserService {
+    @Autowired
+    private UserRepository userRepository;
+}
+```
+
+### 3. Setter Injection:
+- **Use Case:** Post-construction or optional dependencies.
+
+**Example:**
+```java
+public class UserService {
+    private UserRepository userRepository;
+
+    @Autowired
+    public void setUserRepository(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+}
+```
+
+---
+
+## Dependency Injection vs Dependency Inversion Principle
+- **Dependency Injection (DI):** A technique for supplying dependencies to a class.
+- **Dependency Inversion Principle (DIP):** A design principle that states:
+  1. High-level modules should not depend on low-level modules. Both should depend on abstractions.
+  2. Abstractions should not depend on details. Details should depend on abstractions.
+
+**Summary:**
+- DI is an implementation technique for achieving DIP.
