@@ -426,3 +426,263 @@ public class UserService {
 
 **Summary:**
 - DI is an implementation technique for achieving DIP.
+
+  # Injection Types and Usage
+
+## 14. Which Injection is Better & When Should Use What
+
+### 1. Constructor Injection
+
+**When to use:**
+- **Required dependencies:** Use when dependencies are mandatory for the class to function correctly.
+- **Immutability:** Promotes immutability by fully initializing the object at creation.
+- **Best for Testability:** Easier to mock or inject dependencies in unit tests.
+- **Enforces consistency:** Class cannot be instantiated without its required dependencies.
+
+```java
+public class UserService {
+    private final UserRepository userRepository;
+
+    @Autowired
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+}
+
+2. Field Injection
+When to use:
+
+Simplicity: Most concise and easiest form.
+Optional dependencies: Suitable when dependencies are optional or have default values.
+Flexibility: Allows Spring to handle dependency injection internally.
+java
+Copy code
+public class UserService {
+    @Autowired
+    private UserRepository userRepository;
+}
+3. Setter Injection
+When to use:
+
+Optional dependencies: When dependencies are not essential and can be set after object creation.
+Post-construction configuration: Suitable for modifying dependencies after object instantiation.
+Lesser immutability: Allows changes to dependencies during the object's lifetime.
+java
+Copy code
+public class UserService {
+    private UserRepository userRepository;
+
+    @Autowired
+    public void setUserRepository(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+}
+Summary
+Constructor Injection: Use when dependencies are mandatory, the object is immutable, and testing is required.
+Field Injection: Quick and automatic but lacks immutability and makes testing harder.
+Setter Injection: Use when dependencies are optional, or when post-construction modification is needed.
+15. What is the difference between Dependency Injection and Dependency Inversion Principle
+16. Are Wrapper Classes Immutable by Default?
+Yes, wrapper classes in Java (such as Integer, Double, Character, Boolean, etc.) are immutable by design.
+
+Why Wrapper Classes are Immutable
+Final Fields: Fields are final, meaning their values cannot change after initialization.
+No Setter Methods: No methods allow modification of the internal state.
+No Method to Alter Value: Methods like intValue() return copies, not alter the object's state.
+Example:
+
+java
+Copy code
+Integer x = 10;
+x = 20; // Creates a new Integer object; original 10 is unchanged
+Characteristics of Immutable Objects
+Final class
+Final fields
+No setter methods
+Object state is set in constructor
+Example of Immutable Wrapper Class:
+
+java
+Copy code
+Integer i1 = Integer.valueOf(10);
+Integer i2 = i1;
+i1 = 15; // New Integer object created
+System.out.println(i1); // 15
+System.out.println(i2); // 10
+17. Strategy Design Pattern
+The Strategy Design Pattern is a behavioral design pattern that selects an algorithm's behavior at runtime.
+
+Example: Mastercard Payment Strategies
+Step 1: Define the Strategy Interface
+java
+Copy code
+public interface PaymentStrategy {
+    void processPayment(String cardNumber, double amount);
+}
+Step 2: Implement Concrete Strategies
+Domestic Payment Strategy:
+java
+Copy code
+public class DomesticPaymentStrategy implements PaymentStrategy {
+    @Override
+    public void processPayment(String cardNumber, double amount) {
+        System.out.println("Processing domestic payment of $" + amount + " for card " + cardNumber);
+    }
+}
+International Payment Strategy:
+java
+Copy code
+public class InternationalPaymentStrategy implements PaymentStrategy {
+    @Override
+    public void processPayment(String cardNumber, double amount) {
+        System.out.println("Processing international payment of $" + amount + " for card " + cardNumber);
+    }
+}
+Contactless Payment Strategy:
+java
+Copy code
+public class ContactlessPaymentStrategy implements PaymentStrategy {
+    @Override
+    public void processPayment(String cardNumber, double amount) {
+        System.out.println("Processing contactless payment of $" + amount + " for card " + cardNumber);
+    }
+}
+Step 3: Create the Context
+java
+Copy code
+public class PaymentContext {
+    private PaymentStrategy paymentStrategy;
+
+    public void setPaymentStrategy(PaymentStrategy paymentStrategy) {
+        this.paymentStrategy = paymentStrategy;
+    }
+
+    public void executePayment(String cardNumber, double amount) {
+        if (paymentStrategy == null) {
+            throw new IllegalStateException("Payment strategy is not set!");
+        }
+        paymentStrategy.processPayment(cardNumber, amount);
+    }
+}
+Step 4: Test the Strategy Pattern
+java
+Copy code
+public class StrategyPatternDemo {
+    public static void main(String[] args) {
+        PaymentContext paymentContext = new PaymentContext();
+
+        // Domestic Payment
+        paymentContext.setPaymentStrategy(new DomesticPaymentStrategy());
+        paymentContext.executePayment("1234-5678-9012-3456", 100.00);
+
+        // International Payment
+        paymentContext.setPaymentStrategy(new InternationalPaymentStrategy());
+        paymentContext.executePayment("1234-5678-9012-3456", 200.00);
+
+        // Contactless Payment
+        paymentContext.setPaymentStrategy(new ContactlessPaymentStrategy());
+        paymentContext.executePayment("1234-5678-9012-3456", 50.00);
+    }
+}
+Output
+bash
+Copy code
+Processing domestic payment of $100.0 for card 1234-5678-9012-3456
+Processing international payment of $200.0 for card 1234-5678-9012-3456
+Processing contactless payment of $50.0 for card 1234-5678-9012-3456
+18. Can This Be Improved?
+You can use a factory to dynamically select and instantiate strategies.
+
+Improved Version: Strategy Selection with Factory
+PaymentStrategyFactory
+java
+Copy code
+public class PaymentStrategyFactory {
+    public static PaymentStrategy getPaymentStrategy(String type) {
+        switch (type.toLowerCase()) {
+            case "domestic":
+                return new DomesticPaymentStrategy();
+            case "international":
+                return new InternationalPaymentStrategy();
+            case "contactless":
+                return new ContactlessPaymentStrategy();
+            default:
+                throw new IllegalArgumentException("Unknown payment type: " + type);
+        }
+    }
+}
+Updated PaymentContext
+java
+Copy code
+public class PaymentContext {
+    private PaymentStrategy paymentStrategy;
+
+    public void setPaymentStrategy(String type) {
+        this.paymentStrategy = PaymentStrategyFactory.getPaymentStrategy(type);
+    }
+
+    public void executePayment(String cardNumber, double amount) {
+        if (paymentStrategy == null) {
+            throw new IllegalStateException("Payment strategy is not set!");
+        }
+        paymentStrategy.processPayment(cardNumber, amount);
+    }
+}
+Example Usage
+java
+Copy code
+public class StrategyPatternDemo {
+    public static void main(String[] args) {
+        PaymentContext paymentContext = new PaymentContext();
+
+        // Client only passes a string to select the strategy
+        paymentContext.setPaymentStrategy("domestic");
+        paymentContext.executePayment("1234-5678-9012-3456", 100.00);
+
+        paymentContext.setPaymentStrategy("international");
+        paymentContext.executePayment("1234-5678-9012-3456", 200.00);
+
+        paymentContext.setPaymentStrategy("contactless");
+        paymentContext.executePayment("1234-5678-9012-3456", 50.00);
+    }
+}
+Output
+bash
+Copy code
+Processing domestic payment of $100.0 for card 1234-5678-9012-3456
+Processing international payment of $200.0 for card 1234-5678-9012-3456
+Processing contactless payment of $50.0 for card 1234-5678-9012-3456
+Benefits of Using a Factory
+Simplifies client code
+Encapsulates decision logic
+Extensibility
+19. Design Patterns
+Creational:
+
+Singleton: GFG
+Factory: GFG, Versha
+Abstract Factory: GFG
+Builder: Versha, YouTube
+Prototype: ChatGPT
+Behavioral:
+
+Observer: YouTube
+State
+Strategy: GFG, YouTube
+Chain of Responsibility
+Structural:
+
+Decorator: YouTube
+Facade: YouTube
+Copy code
+
+
+
+
+
+
+
+
+
+
+
